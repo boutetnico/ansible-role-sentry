@@ -17,7 +17,12 @@
       - python3-debian
       - python3-docker
     docker_packages:
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-ce
       - docker-ce-cli
+      - docker-ce-rootless-extras
+      - docker-compose-plugin
     git_packages:
       - git
     docker_package_state: present
@@ -42,3 +47,8 @@
         name: "{{ docker_packages + git_packages }}"
         state: present
         update_cache: true
+
+    - name: Ensure Docker daemon is running
+      ansible.builtin.service:
+        name: docker
+        state: started
