@@ -6,9 +6,7 @@ on:
   push:
     branches:
       - master
-  schedule:
-    - cron: "22 2 * * 2"
-
+  workflow_dispatch:
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -22,13 +20,6 @@ jobs:
           - ubuntu-2404
 
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
-          remove-dotnet: 'true'
-
       - uses: actions/checkout@v4
 
       - name: Set up Python 3
