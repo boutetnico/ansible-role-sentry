@@ -1,0 +1,58 @@
+---
+sentry_version: master  # master or a git tag
+sentry_install_dir: /opt/sentry
+sentry_install_options:
+  - "--skip-user-creation"
+  - "--no-report-self-hosted-issues"
+
+sentry_mail_host: smtp
+sentry_mail_port: 25
+sentry_mail_username: ""
+sentry_mail_password: ""
+sentry_mail_use_tls: false
+sentry_mail_use_ssl: false
+sentry_mail_from: root@localhost
+sentry_mail_enable_replies: false
+sentry_mail_reply_hostname: ""
+sentry_mail_mailgun_api_key: ""
+
+sentry_system_secret_key: "!!changeme!!"
+
+sentry_slack_client_id: ""
+sentry_slack_client_secret: ""
+sentry_slack_signing_secret: ""
+
+sentry_github_app_id: ""
+sentry_github_app_name: ""
+sentry_github_app_webhook_secret: ""
+sentry_github_app_client_id: ""
+sentry_github_app_client_secret: ""
+sentry_github_app_private_key: ""
+
+sentry_reverse_ssl_proxy: false
+
+sentry_geoip_account_id: ""
+sentry_geoip_license_key: ""
+sentry_geoip_edition_ids:
+  - GeoLite2-City
+
+sentry_backup_enabled: false
+sentry_backup_command: >
+  mkdir -p backup &&
+  touch ./backup/backup.json &&
+  chmod 666 ./backup/backup.json &&
+  /usr/bin/docker compose
+  run
+  -v $(pwd)/backup:/sentry-data/backup
+  --rm
+  -T
+  -e SENTRY_LOG_LEVEL=CRITICAL
+  web
+  export
+  global
+  /sentry-data/backup/backup.json 2>&1 | /usr/bin/logger -t cron_backup_sentry
+
+# annually,daily,hourly,monthly,reboot,weekly,yearly
+sentry_backup_frequency: daily
+
+sentry_custom_env: []
