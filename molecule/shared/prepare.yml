@@ -51,4 +51,4 @@
     - name: Ensure Docker daemon is running
       ansible.builtin.service:
         name: docker
-        state: running
+        state: started
