@@ -1,5 +1,5 @@
 ---
-sentry_version: "24.9.0"  # master or a git tag
+sentry_version: "24.10.0"  # master or a git tag
 sentry_install_dir: /opt/sentry
 sentry_install_options:
   - "--skip-user-creation"
