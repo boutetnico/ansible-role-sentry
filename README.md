@@ -24,7 +24,7 @@ Role Variables
 
 | Variable                         | Required | Default                | Choices   | Comments                                          |
 |----------------------------------|----------|------------------------|-----------|---------------------------------------------------|
-| sentry_version                   | true     | `25.11.0`              | string    | Git tag or branch to clone.                       |
+| sentry_version                   | true     | `25.11.1`              | string    | Git tag or branch to clone.                       |
 | sentry_install_dir               | true     | `/opt/sentry`          | string    |                                                   |
 | sentry_install_options           | true     |                        | string    | See `defaults/main.yml`.                          |
 | sentry_mail_host                 | true     | `smtp`                 | string    |                                                   |
