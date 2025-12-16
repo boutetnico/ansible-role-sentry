@@ -27,7 +27,7 @@
     group: root
     mode: "0644"
   when:
-    - sentry_geoip_account_id
+    - sentry_geoip_account_id | length > 0
     - sentry_geoip_license_key | length > 0
 
 - name: Setup .env.custom file

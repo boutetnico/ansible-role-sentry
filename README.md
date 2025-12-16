@@ -9,7 +9,7 @@ This role installs and configures [Self-Hosted Sentry](https://develop.sentry.de
 Requirements
 ------------
 
-Ansible 2.15 or newer.
+Ansible 2.19 or newer.
 
 Supported Platforms
 -------------------
