@@ -1,7 +1,7 @@
 ---
 platforms:
-  - name: ansible-role-sentry-debian-11
-    image: debian:11
+  - name: ansible-role-sentry-debian-13
+    image: debian:13
     command: /lib/systemd/systemd
     tmpfs:
       - /run
