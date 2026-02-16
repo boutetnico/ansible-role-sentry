@@ -48,6 +48,7 @@ Role Variables
 | sentry_github_app_client_secret  | true     | `''`                   | string    |                                                   |
 | sentry_github_app_private_key    | true     | `''`                   | string    |                                                   |
 | sentry_system_url_prefix         | true     | `''`                   | string    | Sets `system.url-prefix`.                         |
+| sentry_csrf_trusted_origins      | true     | `[]`                   | list      | Sets `CSRF_TRUSTED_ORIGINS` for multi-domain.     |
 | sentry_reverse_ssl_proxy         | true     | `false`                | boolean   |                                                   |
 | sentry_geoip_account_id          | true     | `''`                   | string    |                                                   |
 | sentry_geoip_license_key         | true     | `''`                   | string    |                                                   |
