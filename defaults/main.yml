@@ -29,6 +29,8 @@ sentry_github_app_client_id: ""
 sentry_github_app_client_secret: ""
 sentry_github_app_private_key: ""
 
+sentry_system_url_prefix: ""
+
 sentry_reverse_ssl_proxy: false
 
 sentry_geoip_account_id: ""

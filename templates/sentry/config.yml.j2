@@ -48,6 +48,9 @@ mail.mailgun-api-key: '{{ sentry_mail_mailgun_api_key }}'
 # Sentry will use this to create links to its different parts of the web UI.
 # This is most helpful if you are using an external reverse proxy.
 # system.url-prefix: https://example.sentry.com
+{% if sentry_system_url_prefix != '' %}
+system.url-prefix: '{{ sentry_system_url_prefix }}'
+{% endif %}
 
 # Most of the time, this should NOT be changed. It's used for communication
 # between containers. `web` is the container's name, and `9000` is the

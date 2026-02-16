@@ -47,6 +47,7 @@ Role Variables
 | sentry_github_app_client_id      | true     | `''`                   | string    |                                                   |
 | sentry_github_app_client_secret  | true     | `''`                   | string    |                                                   |
 | sentry_github_app_private_key    | true     | `''`                   | string    |                                                   |
+| sentry_system_url_prefix         | true     | `''`                   | string    | Sets `system.url-prefix`.                         |
 | sentry_reverse_ssl_proxy         | true     | `false`                | boolean   |                                                   |
 | sentry_geoip_account_id          | true     | `''`                   | string    |                                                   |
 | sentry_geoip_license_key         | true     | `''`                   | string    |                                                   |
