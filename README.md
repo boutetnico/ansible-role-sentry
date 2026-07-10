@@ -6,6 +6,11 @@ ansible-role-sentry
 
 This role installs and configures [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/).
 
+The `install.sh` script is only run when the Sentry version or a configuration
+file changes. A marker file (`.ansible-installed-version`) in the install
+directory records the last successfully installed version; delete it to force
+a reinstall.
+
 Requirements
 ------------
 

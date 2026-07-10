@@ -7,6 +7,7 @@
     force: true
     repo: "{{ sentry_git_repo }}"
     version: "{{ sentry_version }}"
+  register: sentry_repo
 
 - name: Setup sentry config
   ansible.builtin.template:
@@ -18,6 +19,7 @@
   loop:
     - sentry/config.yml
     - sentry/sentry.conf.py
+  register: sentry_config
 
 - name: Setup GeoIP config
   ansible.builtin.template:
@@ -29,6 +31,7 @@
   when:
     - sentry_geoip_account_id | length > 0
     - sentry_geoip_license_key | length > 0
+  register: sentry_geoip_config
 
 - name: Setup .env.custom file
   ansible.builtin.template:
@@ -38,12 +41,41 @@
     group: root
     mode: "0644"
   when: sentry_custom_env | length > 0
+  register: sentry_env_config
+
+- name: Check installed version marker
+  ansible.builtin.stat:
+    path: "{{ sentry_install_dir }}/.ansible-installed-version"
+  register: sentry_marker_stat
+
+- name: Read installed version marker
+  ansible.builtin.slurp:
+    src: "{{ sentry_install_dir }}/.ansible-installed-version"
+  when: sentry_marker_stat.stat.exists
+  register: sentry_marker
 
 - name: Run Sentry install script
   ansible.builtin.command: "./install.sh {{ sentry_install_options | join(' ') }}"
   args:
     chdir: "{{ sentry_install_dir }}"
-  changed_when: false
+  when: >-
+    sentry_repo is changed
+    or sentry_config is changed
+    or sentry_geoip_config is changed
+    or sentry_env_config is changed
+    or not sentry_marker_stat.stat.exists
+    or sentry_marker.content | b64decode | trim != sentry_version
+  changed_when: true
+  register: sentry_install
+
+- name: Record installed version marker
+  ansible.builtin.copy:
+    content: "{{ sentry_version }}\n"
+    dest: "{{ sentry_install_dir }}/.ansible-installed-version"
+    group: root
+    mode: "0644"
+    owner: root
+  when: sentry_install is not skipped
 
 - name: Create and start services
   community.docker.docker_compose_v2:
