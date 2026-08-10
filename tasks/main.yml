@@ -24,7 +24,7 @@
 - name: Setup GeoIP config
   ansible.builtin.template:
     src: "geoip/GeoIP.conf.j2"
-    dest: "{{ sentry_install_dir }}/GeoIP.conf"
+    dest: "{{ sentry_install_dir }}/geoip/GeoIP.conf"
     owner: root
     group: root
     mode: "0644"
