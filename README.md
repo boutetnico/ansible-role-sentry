@@ -62,6 +62,43 @@ Role Variables
 | sentry_backup_command            | true     |                        | boolean   | See `defaults/main.yml`.                          |
 | sentry_backup_frequency          | true     | `daily`                | string    |                                                   |
 | sentry_custom_env                | true     | `[]`                   | list      |                                                   |
+| sentry_alerts_api_url            | true     |                        | string    | See `defaults/main.yml`.                          |
+| sentry_alerts_organization       | true     | `sentry`               | string    | Organization slug.                                |
+| sentry_alerts_slack_integration  | true     | `''`                   | string    | Slack integration id used by alerts.              |
+| sentry_alerts_token              | true     | `''`                   | string    | Alerts are only managed when set.                 |
+| sentry_alerts_user               | true     | `alerts@localhost`     | string    | Service user owning the token.                    |
+| sentry_issue_alerts              | true     | `[]`                   | list      | See below.                                        |
+| sentry_metric_alerts             | true     | `[]`                   | list      | See below.                                        |
+
+Alerts
+------
+
+When `sentry_alerts_token` is set, the role creates a service user with
+`sentry createuser`, gives it that token, and manages alerts through the
+monitors and alerts API. Monitors are matched by name, so renaming one creates
+a new monitor. Alerts removed from the lists are not deleted.
+
+    sentry_metric_alerts:
+      - name: Backend is slow
+        project: backend
+        query: "is_transaction:1"
+        aggregate: p95(span.duration)
+        time_window: 600       # seconds
+        critical: 2000
+        warning: 1000
+        direction: above       # or below, e.g. for apdex
+        owner: team:1          # optional
+        slack_channel: { name: monitoring, id: C0123456789 }  # id is optional
+
+    sentry_issue_alerts:
+      - name: New issues on backend
+        project: backend
+        frequency: 30          # minutes
+        filters: []            # optional extra conditions
+        slack_channel: { name: errors }
+
+Metric alerts on spans only support the aggregates Sentry allows there, e.g.
+`count`, `p95`, `avg`, `apdex` or `failure_rate`; `count_if` is rejected.
 
 Dependencies
 ------------

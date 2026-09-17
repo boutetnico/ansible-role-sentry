@@ -1,0 +1,94 @@
+---
+- name: Create the alerts service user
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - exec
+      - -T
+      - web
+      - sentry
+      - createuser
+      - --email
+      - "{{ sentry_alerts_user }}"
+      - --no-input
+      - --no-password
+      - --no-superuser
+    chdir: "{{ sentry_install_dir }}"
+  changed_when: "'User created' in sentry_alerts_user_result.stdout"
+  register: sentry_alerts_user_result
+
+- name: Set the alerts service user token
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - exec
+      - -T
+      - web
+      - sentry
+      - exec
+      - "-"
+    chdir: "{{ sentry_install_dir }}"
+    stdin: "{{ lookup('ansible.builtin.template', 'alerts/token.py.j2') }}"
+  changed_when: "'token changed' in sentry_alerts_token_result.stdout"
+  no_log: true
+  register: sentry_alerts_token_result
+
+- name: Wait for the Sentry API
+  ansible.builtin.uri:
+    headers:
+      Authorization: "Bearer {{ sentry_alerts_token }}"
+    status_code: 200
+    url: "{{ sentry_alerts_api_url }}/organizations/{{ sentry_alerts_organization }}/"
+  delay: 10
+  no_log: true
+  register: sentry_alerts_api
+  retries: 60
+  until: sentry_alerts_api.status == 200
+
+- name: Manage metric alerts
+  sentry_alert:
+    aggregate: "{{ item.aggregate }}"
+    api_url: "{{ sentry_alerts_api_url }}"
+    critical: "{{ item.critical | d(omit) }}"
+    dataset: "{{ item.dataset | d(omit) }}"
+    direction: "{{ item.direction | d(omit) }}"
+    enabled: "{{ item.enabled | d(omit) }}"
+    environment: "{{ item.environment | d(omit) }}"
+    event_types: "{{ item.event_types | d(omit) }}"
+    extrapolation_mode: "{{ item.extrapolation_mode | d(omit) }}"
+    kind: metric
+    name: "{{ item.name }}"
+    organization: "{{ sentry_alerts_organization }}"
+    owner: "{{ item.owner | d(omit) }}"
+    project: "{{ item.project }}"
+    query: "{{ item.query | d(omit) }}"
+    slack_channel_id: "{{ item.slack_channel.id | d(omit) }}"
+    slack_channel_name: "{{ item.slack_channel.name }}"
+    slack_integration_id: "{{ sentry_alerts_slack_integration }}"
+    time_window: "{{ item.time_window | d(omit) }}"
+    token: "{{ sentry_alerts_token }}"
+    warning: "{{ item.warning | d(omit) }}"
+  loop: "{{ sentry_metric_alerts }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: Manage issue alerts
+  sentry_alert:
+    api_url: "{{ sentry_alerts_api_url }}"
+    enabled: "{{ item.enabled | d(omit) }}"
+    environment: "{{ item.environment | d(omit) }}"
+    filters: "{{ item.filters | d(omit) }}"
+    frequency: "{{ item.frequency | d(omit) }}"
+    kind: issue
+    name: "{{ item.name }}"
+    organization: "{{ sentry_alerts_organization }}"
+    project: "{{ item.project }}"
+    slack_channel_id: "{{ item.slack_channel.id | d(omit) }}"
+    slack_channel_name: "{{ item.slack_channel.name }}"
+    slack_integration_id: "{{ sentry_alerts_slack_integration }}"
+    token: "{{ sentry_alerts_token }}"
+  loop: "{{ sentry_issue_alerts }}"
+  loop_control:
+    label: "{{ item.name }}"

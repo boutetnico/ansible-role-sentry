@@ -60,3 +60,11 @@ sentry_backup_command: >
 sentry_backup_frequency: daily
 
 sentry_custom_env: []
+
+sentry_alerts_api_url: http://127.0.0.1:9000/api/0
+sentry_alerts_organization: sentry
+sentry_alerts_slack_integration: ""
+sentry_alerts_token: ""
+sentry_alerts_user: alerts@localhost
+sentry_issue_alerts: []
+sentry_metric_alerts: []

@@ -93,3 +93,7 @@
     special_time: "{{ sentry_backup_frequency }}"
     state: "{{ 'present' if sentry_backup_enabled else 'absent' }}"
     user: root
+
+- name: Manage alerts
+  ansible.builtin.include_tasks: alerts.yml
+  when: sentry_alerts_token | length > 0

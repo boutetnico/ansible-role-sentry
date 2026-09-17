@@ -1,0 +1,20 @@
+import hashlib
+
+from sentry.models.apitoken import ApiToken
+from sentry.users.models.user import User
+
+scopes = ["alerts:read", "alerts:write", "org:read", "project:read"]
+token = {{ sentry_alerts_token | to_json }}
+user = User.objects.get(username={{ sentry_alerts_user | to_json }})
+hashed = hashlib.sha256(token.encode()).hexdigest()
+existing = ApiToken.objects.filter(user=user, hashed_token=hashed).first()
+
+if existing is None:
+    ApiToken.objects.filter(user=user, name="ansible").delete()
+    ApiToken.objects.create(
+        expires_at=None, name="ansible", scope_list=scopes, token=token, user=user
+    )
+    print("token changed")
+elif sorted(existing.scope_list) != scopes:
+    existing.update(scope_list=scopes)
+    print("token changed")
