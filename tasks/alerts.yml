@@ -1,24 +1,5 @@
 ---
-- name: Create the alerts service user
-  ansible.builtin.command:
-    argv:
-      - docker
-      - compose
-      - exec
-      - -T
-      - web
-      - sentry
-      - createuser
-      - --email
-      - "{{ sentry_alerts_user }}"
-      - --no-input
-      - --no-password
-      - --no-superuser
-    chdir: "{{ sentry_install_dir }}"
-  changed_when: "'User created' in sentry_alerts_user_result.stdout"
-  register: sentry_alerts_user_result
-
-- name: Set the alerts service user token
+- name: Set the alerts internal integration and its token
   ansible.builtin.command:
     argv:
       - docker
@@ -30,10 +11,10 @@
       - exec
       - "-"
     chdir: "{{ sentry_install_dir }}"
-    stdin: "{{ lookup('ansible.builtin.template', 'alerts/token.py.j2') }}"
-  changed_when: "'token changed' in sentry_alerts_token_result.stdout"
+    stdin: "{{ lookup('ansible.builtin.template', 'alerts/integration.py.j2') }}"
+  changed_when: "' changed' in sentry_alerts_integration_result.stdout"
   no_log: true
-  register: sentry_alerts_token_result
+  register: sentry_alerts_integration_result
 
 - name: Wait for the Sentry API
   ansible.builtin.uri:

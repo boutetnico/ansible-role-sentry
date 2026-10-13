@@ -1,0 +1,73 @@
+import hashlib
+
+from sentry.constants import SentryAppStatus
+from sentry.models.apitoken import ApiToken
+from sentry.models.organization import Organization
+from sentry.models.organizationmember import OrganizationMember
+from sentry.sentry_apps.logic import SentryAppCreator
+from sentry.sentry_apps.models.sentry_app import SentryApp
+from sentry.sentry_apps.models.sentry_app_installation import SentryAppInstallation
+from sentry.sentry_apps.models.sentry_app_installation_token import (
+    SentryAppInstallationToken,
+)
+from sentry.users.models.user import User
+
+name = {{ sentry_alerts_integration | to_json }}
+scopes = ["alerts:read", "alerts:write", "org:read", "project:read"]
+token = {{ sentry_alerts_token | to_json }}
+
+organization = Organization.objects.get(slug={{ sentry_alerts_organization | to_json }})
+app = SentryApp.objects.filter(
+    name=name, owner_id=organization.id, status=SentryAppStatus.INTERNAL
+).first()
+
+if app is None:
+    owner = User.objects.get(
+        id=OrganizationMember.objects.filter(
+            organization=organization, role="owner", user_id__isnull=False
+        )
+        .order_by("id")
+        .values_list("user_id", flat=True)[0]
+    )
+    app = SentryAppCreator(
+        author=name,
+        is_internal=True,
+        name=name,
+        organization_id=organization.id,
+        scopes=scopes,
+        verify_install=False,
+    ).run(skip_default_auth_token=True, user=owner)
+    print("integration changed")
+elif sorted(app.scope_list) != scopes:
+    app.update(scope_list=scopes)
+    print("integration changed")
+
+installation = SentryAppInstallation.objects.get(
+    organization_id=organization.id, sentry_app=app
+)
+hashed = hashlib.sha256(token.encode()).hexdigest()
+existing = ApiToken.objects.filter(
+    hashed_token=hashed, user_id=app.proxy_user_id
+).first()
+
+if existing is None:
+    ApiToken.objects.filter(hashed_token=hashed).delete()
+    ApiToken.objects.filter(
+        id__in=SentryAppInstallationToken.objects.filter(
+            sentry_app_installation=installation
+        ).values_list("api_token_id", flat=True)
+    ).delete()
+    SentryAppInstallationToken.objects.create(
+        api_token=ApiToken.objects.create(
+            application_id=app.application_id,
+            expires_at=None,
+            scope_list=scopes,
+            token=token,
+            user_id=app.proxy_user_id,
+        ),
+        sentry_app_installation=installation,
+    )
+    print("token changed")
+elif sorted(existing.scope_list) != scopes:
+    existing.update(scope_list=scopes)
+    print("token changed")

@@ -63,20 +63,21 @@ Role Variables
 | sentry_backup_frequency          | true     | `daily`                | string    |                                                   |
 | sentry_custom_env                | true     | `[]`                   | list      |                                                   |
 | sentry_alerts_api_url            | true     |                        | string    | See `defaults/main.yml`.                          |
+| sentry_alerts_integration        | true     | `Ansible`              | string    | Internal integration owning the token.            |
 | sentry_alerts_organization       | true     | `sentry`               | string    | Organization slug.                                |
 | sentry_alerts_slack_integration  | true     | `''`                   | string    | Slack integration id used by alerts.              |
 | sentry_alerts_token              | true     | `''`                   | string    | Alerts are only managed when set.                 |
-| sentry_alerts_user               | true     | `alerts@localhost`     | string    | Service user owning the token.                    |
 | sentry_issue_alerts              | true     | `[]`                   | list      | See below.                                        |
 | sentry_metric_alerts             | true     | `[]`                   | list      | See below.                                        |
 
 Alerts
 ------
 
-When `sentry_alerts_token` is set, the role creates a service user with
-`sentry createuser`, gives it that token, and manages alerts through the
-monitors and alerts API. Monitors are matched by name, so renaming one creates
-a new monitor. Alerts removed from the lists are not deleted.
+When `sentry_alerts_token` is set, the role creates an internal integration,
+gives it that token, and manages alerts through the monitors and alerts API.
+Unlike a user, the integration keeps working when the organization requires
+two-factor auth. Monitors are matched by name, so renaming one creates a new
+monitor. Alerts removed from the lists are not deleted.
 
     sentry_metric_alerts:
       - name: Backend is slow
