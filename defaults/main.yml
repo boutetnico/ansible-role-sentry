@@ -61,6 +61,8 @@ sentry_backup_frequency: daily
 
 sentry_custom_env: []
 
+sentry_require_2fa: false
+
 sentry_alerts_api_url: http://127.0.0.1:9000/api/0
 sentry_alerts_integration: Ansible
 sentry_alerts_organization: sentry

@@ -1,0 +1,9 @@
+from sentry.models.organization import Organization
+
+required = {{ 'True' if sentry_require_2fa | bool else 'False' }}
+
+for organization in Organization.objects.all():
+    if bool(organization.flags.require_2fa) != required:
+        organization.flags.require_2fa = required
+        organization.save()
+        print("changed")

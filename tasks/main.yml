@@ -94,6 +94,22 @@
     state: "{{ 'present' if sentry_backup_enabled else 'absent' }}"
     user: root
 
+- name: Set two-factor auth requirement
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - exec
+      - -T
+      - web
+      - sentry
+      - exec
+      - "-"
+    chdir: "{{ sentry_install_dir }}"
+    stdin: "{{ lookup('ansible.builtin.template', 'sentry/require_2fa.py.j2') }}"
+  changed_when: "'changed' in sentry_require_2fa_result.stdout"
+  register: sentry_require_2fa_result
+
 - name: Manage alerts
   ansible.builtin.include_tasks: alerts.yml
   when: sentry_alerts_token | length > 0

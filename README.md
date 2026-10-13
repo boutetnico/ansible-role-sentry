@@ -62,6 +62,7 @@ Role Variables
 | sentry_backup_command            | true     |                        | boolean   | See `defaults/main.yml`.                          |
 | sentry_backup_frequency          | true     | `daily`                | string    |                                                   |
 | sentry_custom_env                | true     | `[]`                   | list      |                                                   |
+| sentry_require_2fa               | true     | `false`                | boolean   | Requires two-factor auth in every organization.   |
 | sentry_alerts_api_url            | true     |                        | string    | See `defaults/main.yml`.                          |
 | sentry_alerts_integration        | true     | `Ansible`              | string    | Internal integration owning the token.            |
 | sentry_alerts_organization       | true     | `sentry`               | string    | Organization slug.                                |
