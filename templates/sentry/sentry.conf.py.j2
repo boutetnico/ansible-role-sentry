@@ -374,7 +374,6 @@ SENTRY_FEATURES.update(
             "organizations:discover",
             "organizations:global-views",
             "organizations:issue-views",
-            "organizations:incidents",
             "organizations:integrations-issue-basic",
             "organizations:integrations-issue-sync",
             "organizations:invite-members",
@@ -464,6 +463,27 @@ SENTRY_FEATURES.update(
     }
 )
 
+##########
+# Uptime #
+##########
+
+# The uptime-checker container exposes an HTTP API (port 12345) that Sentry
+# calls to run "Test Monitor" previews and to validate assertions when a
+# monitor is created or updated. Sentry's default region has no API endpoint,
+# so on self-hosted those calls are silently skipped: "Test Monitor" fails
+# with an empty HTTP 400 and invalid assertions are saved without validation.
+# Scheduled uptime checks do not use this endpoint.
+from sentry.conf.types.uptime import UptimeRegionConfig
+
+UPTIME_REGIONS = [
+    UptimeRegionConfig(
+        slug="default",
+        name="Default Region",
+        config_redis_cluster=SENTRY_UPTIME_DETECTOR_CLUSTER,
+        api_endpoint="uptime-checker:12345",
+    ),
+]
+
 #######################
 # MaxMind Integration #
 #######################
@@ -530,6 +550,16 @@ CSRF_TRUSTED_ORIGINS = {{ sentry_csrf_trusted_origins | to_json }}
 # your `.env` or `.env.custom` file. The files should only be a few KBs, and this might be useful
 # if you're using it directly like a CDN instead of using the loader script.
 JS_SDK_LOADER_DEFAULT_SDK_URL = "https://browser.sentry-cdn.com/%s/bundle%s.min.js"
+
+#########
+# Spans #
+#########
+
+# Segments are processed by a taskworker task rather than the dedicated
+# process-segments Kafka consumer, so there is no such consumer in
+# docker-compose.yml. This is set explicitly (rather than relying on the default
+# in sentry) because self-hosted and sentry are released on different cadences.
+SENTRY_OPTIONS["spans.buffer.process-segments-task-rollout-rate"] = 1.0
 
 #####################
 # Insights Settings #
