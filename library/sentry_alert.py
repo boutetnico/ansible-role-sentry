@@ -122,12 +122,14 @@ class SentryApi:
             method=method,
             timeout=30,
         )
-        content = response.read() if response else info.get("body", b"")
         if info["status"] >= 400 or info["status"] < 200:
+            # fetch_url has already read the error body into info, the returned response is spent
+            body = info.get("body") or b""
             self.module.fail_json(
                 msg="%s %s failed with %s" % (method, path, info["status"]),
-                body=content.decode("utf-8", "replace") if content else None,
+                body=body.decode("utf-8", "replace") if body else None,
             )
+        content = response.read()
         return json.loads(content) if content else None
 
     def list(self, path):
@@ -444,6 +446,10 @@ def sync_metric(module, api, org, project_id, result):
                 "after": json.dumps(after, indent=2, sort_keys=True) + "\n",
             }
         )
+        if before["owner"] == after["owner"]:
+            # Sentry checks team membership on any owner it is sent, and the alerts token
+            # belongs to an internal integration, which is a member of no team
+            body.pop("owner", None)
         if not module.check_mode:
             api.request(
                 "PUT", "/organizations/%s/detectors/%s/" % (org, detector["id"]), body
